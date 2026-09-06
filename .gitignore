@@ -1,8 +1,10 @@
 .env
 !.env.example
+.venv/
 data/*.db
 data/*.db-*
 data/*.sqlite*
+*.db
 tests/tmp*/
 __pycache__/
 *.py[cod]
@@ -25,6 +27,7 @@ models/
 *.pth
 
 # Development caches and logs
+logs/
 .pytest_cache/
 .mypy_cache/
 *.log
