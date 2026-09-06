@@ -168,7 +168,7 @@ ollama pull qwen3:4b
 推荐使用项目入口：
 
 ```powershell
-python run.py
+uv run python run.py
 ```
 
 等价命令：
