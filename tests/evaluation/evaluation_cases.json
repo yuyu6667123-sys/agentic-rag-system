@@ -1,0 +1,37 @@
+{
+  "router": {
+    "plain": [
+      "你好",
+      "你是谁",
+      "请介绍一下自己",
+      "Python是什么",
+      "给我讲个笑话"
+    ],
+    "knowledge_base": [
+      "什么是RAG",
+      "什么是向量数据库",
+      "知识库如何实现检索",
+      "Agent如何调用工具"
+    ]
+  },
+  "retrieval": {
+    "high_relevance": ["什么是RAG？"],
+    "ambiguous": ["RAG未来有什么发展？"],
+    "irrelevant": ["美国最高峰是什么？"]
+  },
+  "query_rewrite": [
+    "知识库中是否有关于量子计算和黑洞的内容？"
+  ],
+  "memory": {
+    "turn_1": "什么是RAG？",
+    "turn_2": "它有什么优势？"
+  },
+  "stability": [
+    "Ollama不可用",
+    "SSE客户端提前关闭",
+    "错误验证码",
+    "过期验证码",
+    "Session失效",
+    "知识库不可访问"
+  ]
+}

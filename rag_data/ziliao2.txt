@@ -1,0 +1,97 @@
+# RAG（检索增强生成）全套学习资料
+> RAG：Retrieval‑Augmented Generation，**检索增强生成**，给大模型外挂私有知识库，缓解幻觉、解决知识过时，不需要微调模型。
+完整流程：**索引构建 → 检索召回 → 重排 → LLM生成 → 评估**。
+
+## 一、中文开源教程（直接在线阅读）
+1. **All‑In‑RAG（DataWhale）强烈推荐，中文开源书**
+    GitHub：https://github.com/datawhalechina/all‑in‑rag
+    在线文档：https://datawhalechina.github.io/all‑in‑rag/
+    > 从环境搭建、分块、Embedding、向量库、混合检索、RAGAS评估，完整实战，适合学生做项目、毕设。
+
+2. **RAG完整教程 从入门到生产部署**
+    https://github.com/vivy‑yi/rag‑tutorial
+    > Jupyter Notebook可直接运行，包含GraphRAG、多案例。
+
+3. **Awesome‑RAG‑Study 资源汇总库**
+    https://github.com/nluninja/awesome‑rag‑study
+    > 论文、数据集、框架、评测工具总索引。
+
+4. **Advanced‑RAG‑Techniques 高级RAG模式代码库**
+    https://github.com/NirDiamant/RAG_Techniques
+    > HyDE、RAG‑Fusion、Self‑RAG、CRAG、GraphRAG全部可运行代码。
+
+## 二、核心原始论文（必看）
+1. **RAG原始论文（2020）**
+*Retrieval‑Augmented Generation for Knowledge‑Intensive NLP Tasks*
+> Meta提出RAG架构，奠基之作。
+
+2. **DPR稠密检索（2020）**
+*Dense Passage Retrieval for Open‑Domain Question Answering*
+> 稠密向量检索基础，几乎所有RAG底层都用到。
+
+3. **Self‑RAG（2023）**
+*Self‑RAG: Self‑Reflective Retrieval‑Augmented Generation*
+> 模型自己判断要不要检索，什么时候停止检索。
+
+4. **HyDE（2022）**
+*Hypothetical Document Embeddings*
+> 假设文档嵌入，解决短问句检索效果差。
+
+5. **GraphRAG（微软2024）**
+> 知识图谱+RAG，处理多跳、复杂关联问题。
+
+## 三、主流开发框架
+### 开发框架（写代码）
+1. **LangChain**：生态最全，适合做复杂工作流、Agentic‑RAG，Python/JS双支持
+2. **LlamaIndex**：专门面向RAG，索引、分块策略更丰富，做知识库问答首选
+3. **Haystack**：工程生产向，pipeline流水线设计
+
+### 低代码/开箱即用项目（快速搭Demo）
+1. **RAGFlow**：深度文档解析，PDF/表格/图片解析强，适合毕业设计/项目演示
+2. **Dify**：可视化界面，零代码搭建RAG应用，支持API输出
+3. **QAnything（网易有道）**：本地离线知识库，丢文件即可问答，上手极快
+
+### 向量数据库选型
+- **Chroma**：轻量嵌入式，本地Demo、学习首选，无需额外部署
+- **Qdrant**：Rust编写，性能好，过滤能力强，中小型生产项目
+- **Milvus**：分布式，十亿级向量，企业级大规模使用
+- **pgvector**：PostgreSQL插件，已有PG数据库优先选
+
+### 模型（国内常用）
+- Embedding：**BGE‑M3**（智源），中文效果强
+- Reranker重排：**BGE‑Reranker‑Large**，显著提升召回质量
+
+### RAG评估工具
+1. **RAGAS**：行业最常用，评估召回相关性、答案忠实度、幻觉检测，自动打分
+2. **TruLens**：LLM应用可观测，追踪RAG每一步日志，定位bad case
+
+## 四、基础RAG完整工作流
+1. **索引阶段（离线）**
+文档加载 → 清洗 → **Chunk分块** → Embedding向量化 → 存入向量数据库
+> 分块是RAG效果的关键，常用256‑512token，带重叠；优先语义分块，不要粗暴固定长度
+
+2. **查询阶段（在线）**
+用户提问 → Query改写/扩展 → **混合检索（BM25关键词 + 向量检索）** → Rerank重排 → 拼接Prompt上下文 → LLM生成答案 → 输出溯源引用
+
+## 五、进阶RAG技术速记（面试/项目）
+|技术|作用|
+|----|----|
+|HyDE|生成假设文档，用假设文档做检索，优化短query|
+|RAG‑Fusion|生成多条改写query，多路检索融合结果|
+|Self‑RAG|模型自主判断：是否检索、检索几次、是否引用|
+|CRAG|过滤掉检索到的无效噪声文档|
+|GraphRAG|构建实体关系图谱，解决多跳复杂问题|
+|Agentic‑RAG|Agent自主调用检索工具，动态规划检索步骤|
+
+## 六、学习路线建议
+1. **入门**：Chroma + LangChain/LlamaIndex + Ollama本地大模型，跑通PDF问答Demo；弄懂Chunk、Embedding、向量检索概念。
+2. **进阶**：加上BM25混合检索 + BGE‑Reranker重排；调优分块策略；用RAGAS做自动评估。
+3. **高阶**：实现HyDE/RAG‑Fusion；尝试GraphRAG；做Bad Case分析迭代。
+4. **生产**：文档解析MinerU/Docling，向量库Milvus/Qdrant，增加缓存、日志、权限控制。
+
+## 七、避坑要点
+1. RAG效果**80%取决于数据预处理、分块质量**，不是换大模型就能解决一切。
+2. 只做向量检索效果有限，**混合检索+Rerank是性价比最高优化手段**。
+3. 一定要做评估，不能靠肉眼主观判断好坏。
+4. 即使有检索，依然会产生幻觉，Prompt必须增加忠实性约束，最好输出引用来源。
+

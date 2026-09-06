@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090b0d">
+  <title>登录 · Agentic RAG</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090b0d;
+      --surface: rgba(20, 23, 26, 0.88);
+      --surface-strong: #161a1d;
+      --line: rgba(255, 255, 255, 0.12);
+      --line-strong: rgba(255, 255, 255, 0.22);
+      --text: #f4f7f5;
+      --muted: #9aa5a1;
+      --cyan: #6fe7dc;
+      --coral: #ff846b;
+      --green: #88d498;
+      --danger: #ff9c89;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      min-width: 300px;
+      overflow-x: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button, input { font: inherit; letter-spacing: 0; }
+
+    .network {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0.72;
+    }
+
+    .ambient {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(115deg, rgba(111, 231, 220, 0.07), transparent 32%),
+        linear-gradient(295deg, rgba(255, 132, 107, 0.055), transparent 34%);
+      mask-image: linear-gradient(to bottom, black 15%, rgba(0, 0, 0, 0.7) 70%, transparent);
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      width: min(1120px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 28px 0 20px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .wordmark {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .brand-mark {
+      position: relative;
+      width: 27px;
+      height: 27px;
+      border: 1px solid rgba(111, 231, 220, 0.55);
+      border-radius: 6px;
+      background: #111518;
+      box-shadow: inset 0 0 18px rgba(111, 231, 220, 0.1);
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 12px rgba(111, 231, 220, 0.7);
+    }
+
+    .brand-mark::before { left: 6px; top: 7px; }
+    .brand-mark::after { right: 6px; bottom: 6px; background: var(--coral); }
+
+    .system-state {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .system-state::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px rgba(136, 212, 152, 0.55);
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      align-items: center;
+      gap: 84px;
+      padding: 56px 0 44px;
+    }
+
+    .brand-copy {
+      max-width: 620px;
+      animation: enter 650ms cubic-bezier(.22, .8, .3, 1) both;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 18px;
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before { content: ""; width: 36px; height: 1px; background: var(--cyan); }
+
+    h1 {
+      margin: 0;
+      max-width: 620px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 72px;
+      line-height: 0.98;
+      font-weight: 500;
+      text-wrap: balance;
+    }
+
+    h1 span { color: var(--cyan); }
+
+    .subtitle {
+      margin: 25px 0 0;
+      max-width: 500px;
+      color: #b7c1bd;
+      font-size: 17px;
+      line-height: 1.75;
+    }
+
+    .capabilities {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-top: 34px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .capabilities span { display: inline-flex; align-items: center; gap: 7px; }
+    .capabilities span::before { content: ""; width: 4px; height: 4px; background: var(--coral); }
+
+    .auth-panel {
+      position: relative;
+      padding: 30px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      animation: enter 650ms 90ms cubic-bezier(.22, .8, .3, 1) both;
+    }
+
+    .auth-panel::before {
+      content: "";
+      position: absolute;
+      inset: -1px auto auto 28px;
+      width: 68px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--cyan), var(--coral));
+    }
+
+    .panel-index { color: var(--coral); font-size: 11px; font-weight: 700; }
+    .auth-panel h2 { margin: 10px 0 7px; font-size: 24px; font-weight: 650; }
+    .panel-copy { margin: 0 0 26px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+    .field { margin-bottom: 17px; }
+    .field-label { display: block; margin-bottom: 8px; color: #cad2cf; font-size: 12px; font-weight: 650; }
+
+    .control-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 9px; }
+
+    input {
+      width: 100%;
+      min-width: 0;
+      height: 46px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      outline: none;
+      background: rgba(7, 9, 10, 0.72);
+      color: var(--text);
+      transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    input::placeholder { color: #66706d; }
+    input:hover { border-color: var(--line-strong); }
+    input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(111, 231, 220, 0.1); background: #0b0e10; }
+    input[aria-invalid="true"] { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(255, 156, 137, 0.09); }
+
+    #code { font-variant-numeric: tabular-nums; }
+
+    button {
+      height: 46px;
+      border: 0;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: transform 150ms ease, background 150ms ease, color 150ms ease, opacity 150ms ease;
+    }
+
+    button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+    button:active:not(:disabled) { transform: translateY(1px); }
+    button:disabled { cursor: not-allowed; opacity: 0.58; }
+
+    .send-code {
+      min-width: 116px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      background: #202528;
+      color: #dfe5e2;
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .send-code:hover:not(:disabled) { border-color: rgba(111, 231, 220, 0.45); color: var(--cyan); background: #242b2d; }
+
+    .submit {
+      position: relative;
+      width: 100%;
+      margin-top: 5px;
+      background: var(--text);
+      color: #0b0e0f;
+      font-weight: 750;
+    }
+
+    .submit:hover:not(:disabled) { background: var(--cyan); }
+
+    .button-content { display: inline-flex; align-items: center; justify-content: center; gap: 9px; }
+    .arrow { font-size: 17px; line-height: 1; }
+
+    .spinner {
+      display: none;
+      width: 14px;
+      height: 14px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: spin 650ms linear infinite;
+    }
+
+    button.loading .spinner { display: inline-block; }
+    button.loading .arrow { display: none; }
+
+    .message {
+      min-height: 36px;
+      margin: 14px 0 0;
+      padding: 9px 10px;
+      border-left: 2px solid transparent;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      opacity: 0;
+      transform: translateY(-3px);
+      transition: opacity 150ms ease, transform 150ms ease;
+    }
+
+    .message.visible { opacity: 1; transform: translateY(0); }
+    .message.success { border-color: var(--green); color: #bce7c5; background: rgba(136, 212, 152, 0.06); }
+    .message.error { border-color: var(--danger); color: #ffc1b5; background: rgba(255, 156, 137, 0.06); }
+    .message.info { border-color: var(--cyan); color: #b8eee9; background: rgba(111, 231, 220, 0.055); }
+
+    .fine-print { margin: 17px 0 0; color: #6f7976; font-size: 11px; line-height: 1.55; text-align: center; }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      color: #68726e;
+      font-size: 11px;
+    }
+
+    @keyframes enter { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 860px) {
+      .shell { width: min(620px, calc(100% - 36px)); }
+      .main { grid-template-columns: 1fr; gap: 38px; padding-top: 52px; }
+      .brand-copy { text-align: center; margin: 0 auto; }
+      .eyebrow { justify-content: center; }
+      h1 { font-size: 58px; margin: 0 auto; }
+      .subtitle { margin-left: auto; margin-right: auto; }
+      .capabilities { justify-content: center; }
+      .auth-panel { width: min(390px, 100%); margin: 0 auto; }
+    }
+
+    @media (max-width: 480px) {
+      .shell { width: calc(100% - 24px); padding-top: 18px; }
+      .system-state { display: none; }
+      .main { padding: 42px 0 32px; gap: 30px; }
+      h1 { font-size: 46px; }
+      .subtitle { font-size: 15px; }
+      .capabilities { display: none; }
+      .auth-panel { padding: 23px 18px; }
+      .control-row { grid-template-columns: minmax(0, 1fr) 108px; gap: 7px; }
+      .send-code { min-width: 0; padding: 0 8px; }
+      .footer { justify-content: center; }
+      .footer span:last-child { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+      .network { opacity: 0.45; }
+    }
+  </style>
+</head>
+<body>
+  <canvas class="network" id="network" aria-hidden="true"></canvas>
+  <div class="ambient" aria-hidden="true"></div>
+
+  <div class="shell">
+    <header class="topbar">
+      <div class="wordmark"><span class="brand-mark" aria-hidden="true"></span>Agentic RAG</div>
+      <div class="system-state">Knowledge engine online</div>
+    </header>
+
+    <main class="main">
+      <section class="brand-copy" aria-labelledby="brand-title">
+        <p class="eyebrow">Intelligent Knowledge Assistant</p>
+        <h1 id="brand-title">Agentic <span>RAG</span></h1>
+        <p class="subtitle">让检索、推理与可信来源自然协作。进入你的智能知识空间，开始一次有依据的对话。</p>
+        <div class="capabilities" aria-label="核心能力">
+          <span>语义检索</span><span>证据追踪</span><span>流式推理</span>
+        </div>
+      </section>
+
+      <section class="auth-panel" aria-labelledby="auth-title">
+        <div class="panel-index">ACCESS / 01</div>
+        <h2 id="auth-title">验证身份</h2>
+        <p class="panel-copy">使用 QQ 邮箱验证码登录。首次验证将自动创建账号。</p>
+
+        <form id="auth-form" novalidate>
+          <div class="field">
+            <label class="field-label" for="email">QQ 邮箱</label>
+            <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="请输入 QQ 邮箱" maxlength="254" required>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="code">验证码</label>
+            <div class="control-row">
+              <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6 位数字" maxlength="6" pattern="[0-9]{6}" required>
+              <button class="send-code" id="send-code" type="button">
+                <span class="button-content"><span class="spinner" aria-hidden="true"></span><span id="send-label">发送验证码</span></span>
+              </button>
+            </div>
+          </div>
+
+          <button class="submit" id="submit" type="submit">
+            <span class="button-content"><span class="spinner" aria-hidden="true"></span><span id="submit-label">登录 / 注册</span><span class="arrow" aria-hidden="true">→</span></span>
+          </button>
+          <div class="message" id="message" role="status" aria-live="polite"></div>
+          <p class="fine-print">验证即表示你正在访问受保护的 Agent 工作区</p>
+        </form>
+      </section>
+    </main>
+
+    <footer class="footer"><span>© 2026 Agentic RAG</span><span>Grounded answers · Traceable evidence</span></footer>
+  </div>
+
+  <script>
+    (() => {
+      const form = document.getElementById('auth-form');
+      const emailInput = document.getElementById('email');
+      const codeInput = document.getElementById('code');
+      const sendButton = document.getElementById('send-code');
+      const sendLabel = document.getElementById('send-label');
+      const submitButton = document.getElementById('submit');
+      const submitLabel = document.getElementById('submit-label');
+      const message = document.getElementById('message');
+      const qqEmailPattern = /^[1-9][0-9]{4,11}@qq\.com$/i;
+      let countdownTimer = null;
+      let secondsRemaining = 0;
+
+      const detailText = (payload, fallback) => {
+        if (!payload) return fallback;
+        if (typeof payload.detail === 'string') return payload.detail;
+        if (Array.isArray(payload.detail) && payload.detail[0]?.msg) return payload.detail[0].msg;
+        return fallback;
+      };
+
+      const showMessage = (text, type = 'info') => {
+        message.textContent = text;
+        message.className = `message visible ${type}`;
+      };
+
+      const clearMessage = () => {
+        message.textContent = '';
+        message.className = 'message';
+      };
+
+      const setInvalid = (input, invalid) => input.setAttribute('aria-invalid', String(invalid));
+
+      const validateEmail = () => {
+        const valid = qqEmailPattern.test(emailInput.value.trim());
+        setInvalid(emailInput, !valid);
+        if (!valid) showMessage('请输入有效的 QQ 邮箱，例如 123456@qq.com。', 'error');
+        return valid;
+      };
+
+      const validateCode = () => {
+        const valid = /^[0-9]{6}$/.test(codeInput.value);
+        setInvalid(codeInput, !valid);
+        if (!valid) showMessage('请输入邮件中收到的 6 位数字验证码。', 'error');
+        return valid;
+      };
+
+      const setLoading = (button, loading, label, loadingText) => {
+        button.disabled = loading;
+        button.classList.toggle('loading', loading);
+        label.textContent = loading ? loadingText : label.dataset.default;
+      };
+
+      const startCountdown = (seconds) => {
+        window.clearInterval(countdownTimer);
+        secondsRemaining = Math.max(1, Number(seconds) || 60);
+        sendButton.disabled = true;
+        sendButton.classList.remove('loading');
+        const render = () => {
+          sendLabel.textContent = secondsRemaining > 0 ? `${secondsRemaining}s 后重发` : '重新发送';
+          if (secondsRemaining <= 0) {
+            window.clearInterval(countdownTimer);
+            sendButton.disabled = false;
+            return;
+          }
+          secondsRemaining -= 1;
+        };
+        render();
+        countdownTimer = window.setInterval(render, 1000);
+      };
+
+      sendLabel.dataset.default = '发送验证码';
+      submitLabel.dataset.default = '登录 / 注册';
+
+      emailInput.addEventListener('input', () => {
+        setInvalid(emailInput, false);
+        if (message.classList.contains('error')) clearMessage();
+      });
+
+      codeInput.addEventListener('input', () => {
+        codeInput.value = codeInput.value.replace(/\D/g, '').slice(0, 6);
+        setInvalid(codeInput, false);
+        if (message.classList.contains('error')) clearMessage();
+      });
+
+      sendButton.addEventListener('click', async () => {
+        if (!validateEmail()) return;
+        clearMessage();
+        setLoading(sendButton, true, sendLabel, '发送中');
+        try {
+          const response = await fetch('/auth/code/request', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: emailInput.value.trim() }),
+          });
+          const payload = await response.json().catch(() => null);
+          if (!response.ok) {
+            if (response.status === 429) {
+              startCountdown(response.headers.get('Retry-After') || 60);
+            } else {
+              setLoading(sendButton, false, sendLabel, '发送中');
+            }
+            throw new Error(detailText(payload, '验证码发送失败，请稍后重试。'));
+          }
+          showMessage('验证码已发送，请在 5 分钟内完成验证。', 'success');
+          startCountdown(payload?.cooldown_seconds || 60);
+          codeInput.focus();
+        } catch (error) {
+          if (!secondsRemaining) setLoading(sendButton, false, sendLabel, '发送中');
+          showMessage(error instanceof Error ? error.message : '请求失败，请检查网络连接。', 'error');
+        }
+      });
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!validateEmail() || !validateCode()) return;
+        clearMessage();
+        setLoading(submitButton, true, submitLabel, '正在验证');
+        try {
+          const response = await fetch('/auth/code/verify', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: emailInput.value.trim(), code: codeInput.value }),
+          });
+          const payload = await response.json().catch(() => null);
+          if (!response.ok) throw new Error(detailText(payload, '验证失败，请重试。'));
+          showMessage('验证成功，正在进入知识空间…', 'success');
+          window.location.replace('/');
+        } catch (error) {
+          setLoading(submitButton, false, submitLabel, '正在验证');
+          showMessage(error instanceof Error ? error.message : '请求失败，请检查网络连接。', 'error');
+        }
+      });
+
+      fetch('/auth/me', { credentials: 'same-origin' }).then((response) => {
+        if (response.ok) window.location.replace('/');
+      }).catch(() => {});
+
+      const canvas = document.getElementById('network');
+      const context = canvas.getContext('2d');
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const nodes = [];
+      let width = 0;
+      let height = 0;
+      let animationFrame = 0;
+
+      const resize = () => {
+        const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = Math.round(width * ratio);
+        canvas.height = Math.round(height * ratio);
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        const targetCount = Math.min(46, Math.max(20, Math.floor((width * height) / 28000)));
+        while (nodes.length < targetCount) {
+          nodes.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 0.12,
+            vy: (Math.random() - 0.5) * 0.12,
+            accent: Math.random() > 0.82,
+          });
+        }
+        nodes.length = targetCount;
+      };
+
+      const draw = () => {
+        context.clearRect(0, 0, width, height);
+        for (let index = 0; index < nodes.length; index += 1) {
+          const node = nodes[index];
+          if (!reducedMotion) {
+            node.x += node.vx;
+            node.y += node.vy;
+            if (node.x < -10 || node.x > width + 10) node.vx *= -1;
+            if (node.y < -10 || node.y > height + 10) node.vy *= -1;
+          }
+          for (let next = index + 1; next < nodes.length; next += 1) {
+            const other = nodes[next];
+            const distance = Math.hypot(node.x - other.x, node.y - other.y);
+            if (distance < 145) {
+              context.strokeStyle = `rgba(132, 171, 164, ${0.13 * (1 - distance / 145)})`;
+              context.lineWidth = 0.7;
+              context.beginPath();
+              context.moveTo(node.x, node.y);
+              context.lineTo(other.x, other.y);
+              context.stroke();
+            }
+          }
+          context.fillStyle = node.accent ? 'rgba(255, 132, 107, 0.62)' : 'rgba(111, 231, 220, 0.48)';
+          context.beginPath();
+          context.arc(node.x, node.y, node.accent ? 1.6 : 1.2, 0, Math.PI * 2);
+          context.fill();
+        }
+        if (!reducedMotion) animationFrame = window.requestAnimationFrame(draw);
+      };
+
+      window.addEventListener('resize', resize, { passive: true });
+      document.addEventListener('visibilitychange', () => {
+        window.cancelAnimationFrame(animationFrame);
+        if (!document.hidden && !reducedMotion) animationFrame = window.requestAnimationFrame(draw);
+      });
+      resize();
+      draw();
+    })();
+  </script>
+</body>
+</html>

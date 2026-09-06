@@ -1,0 +1,33 @@
+.env
+!.env.example
+data/*.db
+data/*.db-*
+data/*.sqlite*
+tests/tmp*/
+__pycache__/
+*.py[cod]
+
+# Runtime databases and vector stores
+src/chroma_db/
+chroma_db/
+data/
+
+# Local model and embedding caches
+.cache/
+.hf_cache/
+.huggingface/
+huggingface_cache/
+model_cache/
+models/
+*.safetensors
+*.onnx
+*.pt
+*.pth
+
+# Development caches and logs
+.pytest_cache/
+.mypy_cache/
+*.log
+
+# IDE metadata (may contain local usernames and paths)
+.idea/
